@@ -21,6 +21,28 @@ def SJF(ready_queue):
         yield shortest_job[0]
       
       ready_queue.remove(shortest_job)
+       
+# -------------Priority Scheduler -----------------
+def preemptive_Priority(ready_queue):
+    
+    while len(ready_queue) > 0:
+      Priority_job = max(ready_queue, key=lambda process: process[2])
+      Priority_job[1] -= 1
+      yield Priority_job[0]
+      
+      if Priority_job[1] == 0:
+        ready_queue.remove(Priority_job)
+
+def Non_preemptive_Priority(ready_queue):
+    
+    while len(ready_queue) > 0:
+      Priority_job = max(ready_queue, key=lambda process: process[2])
+      
+      while(Priority_job[1] > 0):
+        Priority_job[1] -= 1
+        yield Priority_job[0]
+        if Priority_job[1] == 0:
+          ready_queue.remove(Priority_job)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
