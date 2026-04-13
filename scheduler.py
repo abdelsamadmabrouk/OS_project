@@ -12,7 +12,7 @@ class Process:
 
 def _update_waiting_time(current_process, ready_queue):
   for process in ready_queue:
-    if process.pid != current_process.pid:
+    if process is current_process:
       process.waiting_time += 1
 
 # -------------Preemptive Shortest Job First Scheduler -----------------  
