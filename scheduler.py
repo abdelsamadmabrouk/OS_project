@@ -1,26 +1,59 @@
 
-
+class Process:
+   
+   def __init__(self, pid, burst_time, priority=None):
+      
+      self.pid = pid
+      self.burst_time = burst_time
+      self.remaining_time = burst_time
+      self.priority = priority
+      self.waiting_time = 0
+      
+      
+   
 
 def preemptive_SJF(ready_queue):
     
     while len(ready_queue) > 0:
-      shortest_job = min(ready_queue, key=lambda process: process[1])
-      shortest_job[1] -= 1
-      yield shortest_job[0]
+      shortest_job = min(ready_queue, key=lambda process: process.remaining_time)
+      shortest_job.remaining_time -= 1
+      yield shortest_job.pid
       
-      if shortest_job[1] == 0:
+      if shortest_job.remaining_time == 0:
         ready_queue.remove(shortest_job)
         
         
 def SJF(ready_queue):
    while len(ready_queue) > 0:
-      shortest_job = min(ready_queue, key=lambda process: process[1])
+      shortest_job = min(ready_queue, key=lambda process: process.remaining_time)
 
-      while shortest_job[1] > 0: 
-        shortest_job[1] -= 1
-        yield shortest_job[0]
+      while shortest_job.remaining_time > 0: 
+        shortest_job.remaining_time -= 1
+        yield shortest_job.pid
       
       ready_queue.remove(shortest_job)
+       
+# -------------Priority Scheduler -----------------
+def preemptive_Priority(ready_queue):
+    
+    while len(ready_queue) > 0:
+      Priority_job = max(ready_queue, key=lambda process: process[2])
+      Priority_job[1] -= 1
+      yield Priority_job[0]
+      
+      if Priority_job[1] == 0:
+        ready_queue.remove(Priority_job)
+
+def Non_preemptive_Priority(ready_queue):
+    
+    while len(ready_queue) > 0:
+      Priority_job = max(ready_queue, key=lambda process: process[2])
+      
+      while(Priority_job[1] > 0):
+        Priority_job[1] -= 1
+        yield Priority_job[0]
+        if Priority_job[1] == 0:
+          ready_queue.remove(Priority_job)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -78,3 +111,5 @@ def round_robin(ready_queue, quantum):
 
 
    
+x = Process("P1", 31)
+x.priority = 11
