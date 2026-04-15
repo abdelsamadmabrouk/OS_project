@@ -15,8 +15,8 @@ Public API
     widget.reset()                     # call when starting a new run
 """
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSizePolicy
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.patches as mpatches
 import matplotlib.ticker as ticker
@@ -41,7 +41,7 @@ def _pid_color(pid: str) -> tuple:
 
 class GanttWidget(QWidget):
     """
-    A PyQt6 widget that renders a live single-row Gantt chart using matplotlib.
+    A PyQt5 widget that renders a live single-row Gantt chart using matplotlib.
 
     Usage
     ─────
@@ -63,8 +63,8 @@ class GanttWidget(QWidget):
         self._fig.subplots_adjust(left=0.02, right=0.98, top=0.72, bottom=0.38)
 
         self._canvas = FigureCanvas(self._fig)
-        self._canvas.setSizePolicy(QSizePolicy.Policy.Expanding,
-                                   QSizePolicy.Policy.Expanding)
+        self._canvas.setSizePolicy(QSizePolicy.Expanding,
+                                   QSizePolicy.Expanding)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)

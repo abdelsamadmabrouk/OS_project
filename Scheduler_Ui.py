@@ -1,16 +1,16 @@
 import sys
-from PyQt6.QtWidgets import ( QApplication, QMainWindow, QWidget,
+from PyQt5.QtWidgets import ( QApplication, QMainWindow, QWidget,
                              QVBoxLayout, QHBoxLayout, QFormLayout,
                              QComboBox, QSpinBox, QLineEdit,
-                             QPushButton, QTableWidget,
+                             QPushButton, QTableWidget, QTableWidgetItem,
                              QLabel, QHeaderView, QFrame )
-from PyQt6.QtCore import Qt
+from PyQt5.QtCore import Qt
 
 class CPUSchedulerUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("CPU Scheduling Simulator")
-        self.setGeometry(100, 100, 900, 600)
+        self.setGeometry(100, 100, 1050, 700)
 
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
@@ -45,22 +45,34 @@ class CPUSchedulerUI(QMainWindow):
 
         self.p_name = QLineEdit()
         self.p_arrival = QSpinBox()
+        self.p_arrival.setMaximum(9999)
         self.p_burst = QSpinBox()
+        self.p_burst.setMinimum(1)
+        self.p_burst.setMaximum(9999)
         layout.addRow("Process Name:", self.p_name)
         layout.addRow("Arrival Time:", self.p_arrival)
         layout.addRow("Burst Time:",   self.p_burst)
 
         self.priority_label = QLabel("Priority:")
         self.p_priority = QSpinBox()
+        self.p_priority.setMaximum(9999)
         layout.addRow(self.priority_label, self.p_priority)
 
         self.quantum_label = QLabel("Time Quantum:")
         self.p_quantum = QSpinBox()
+        self.p_quantum.setMinimum(1)
+        self.p_quantum.setMaximum(9999)
+        self.p_quantum.setValue(2)
         layout.addRow(self.quantum_label, self.p_quantum)
 
         self.add_btn = QPushButton("Add Process")
         self.add_btn.setStyleSheet("background-color: #e74c3c; color: white; font-weight: bold;")
         layout.addRow(self.add_btn)
+
+        self.add_now_btn = QPushButton("Add Process Now (at current time)")
+        self.add_now_btn.setStyleSheet("background-color: #8e44ad; color: white; font-weight: bold;")
+        self.add_now_btn.setVisible(False)
+        layout.addRow(self.add_now_btn)
 
         self.main_layout.addWidget(self.input_frame)
         self.toggle_fields()   
@@ -81,13 +93,18 @@ class CPUSchedulerUI(QMainWindow):
     def tables_ui(self):
         tables_layout = QHBoxLayout()
 
-        self.process_table = QTableWidget(0, 4)
-        self.process_table.setHorizontalHeaderLabels( ["Name", "Arrival", "Burst", "Priority"])
-        self.process_table.horizontalHeader().setSectionResizeMode( QHeaderView.ResizeMode.Stretch )
+        # Main process table — 6 columns including Remaining and Status
+        self.process_table = QTableWidget(0, 6)
+        self.process_table.setHorizontalHeaderLabels(
+            ["Name", "Arrival", "Burst", "Priority", "Remaining", "Status"])
+        self.process_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch)
 
+        # Live ready-queue table
         self.live_table = QTableWidget(0, 2)
         self.live_table.setHorizontalHeaderLabels(["Process", "Remaining Burst"])
-        self.live_table.horizontalHeader().setSectionResizeMode( QHeaderView.ResizeMode.Stretch )
+        self.live_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch)
 
         tables_layout.addWidget(self.process_table)
         tables_layout.addWidget(self.live_table)
@@ -96,10 +113,11 @@ class CPUSchedulerUI(QMainWindow):
 
     def gantt_ui(self):
         self.gantt_frame = QFrame()
-        self.gantt_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        self.gantt_frame.setFrameShape(QFrame.StyledPanel)
         self.gantt_frame.setMinimumHeight(200)
-        layout = QVBoxLayout(self.gantt_frame)
-        layout.addWidget(QLabel("Gantt Chart"),alignment=Qt.AlignmentFlag.AlignCenter)
+        self.gantt_layout = QVBoxLayout(self.gantt_frame)
+        self.gantt_layout.addWidget(
+            QLabel("Gantt Chart"), 0, Qt.AlignCenter)
         self.main_layout.addWidget(self.gantt_frame)
 
 
@@ -108,26 +126,35 @@ class CPUSchedulerUI(QMainWindow):
 
         self.start_live_btn = QPushButton("Start Live Simulation")
         self.start_live_btn.setFixedHeight(40)
-        self.start_live_btn.setStyleSheet( "background-color: #2ecc71; color: white; font-weight: bold;")
+        self.start_live_btn.setStyleSheet(
+            "background-color: #2ecc71; color: white; font-weight: bold;")
   
         self.run_existing_btn = QPushButton("Run Currently Existing Processes")
         self.run_existing_btn.setFixedHeight(40)
-        self.run_existing_btn.setStyleSheet("background-color: #3498db; color: white; font-weight: bold;") 
+        self.run_existing_btn.setStyleSheet(
+            "background-color: #3498db; color: white; font-weight: bold;") 
+
+        self.stop_btn = QPushButton("Stop")
+        self.stop_btn.setFixedHeight(40)
+        self.stop_btn.setStyleSheet(
+            "background-color: #e67e22; color: white; font-weight: bold;")
 
         btn_layout.addWidget(self.start_live_btn)
         btn_layout.addWidget(self.run_existing_btn)
+        btn_layout.addWidget(self.stop_btn)
         self.main_layout.addLayout(btn_layout)
 
         results_frame = QFrame()
-        results_frame.setStyleSheet( "background-color: #2c3e50; border-radius: 5px; padding: 10px;")
+        results_frame.setStyleSheet(
+            "background-color: #2c3e50; border-radius: 5px; padding: 10px;")
         results_layout = QHBoxLayout(results_frame)
 
         result_style = "color: #ecf0f1; font-size: 15px; font-weight: bold;"
         
-        self.avg_waiting_label = QLabel("Avg Waiting Time: ")
+        self.avg_waiting_label = QLabel("Avg Waiting Time: --")
         self.avg_waiting_label.setStyleSheet(result_style)
 
-        self.avg_turnaround_label = QLabel("Avg Turnaround Time: ")
+        self.avg_turnaround_label = QLabel("Avg Turnaround Time: --")
         self.avg_turnaround_label.setStyleSheet(result_style)
 
         results_layout.addWidget(self.avg_waiting_label)
@@ -140,4 +167,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = CPUSchedulerUI()
     window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec_())

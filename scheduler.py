@@ -1,14 +1,18 @@
 
 class Process:
-   
-  def __init__(self, pid, burst_time, priority=None):
-      
+
+  def __init__(self, pid, arrival_time=0, burst_time=1, priority=0,
+               remaining_time=None, completion_time=0,
+               waiting_time=0, turnaround_time=0):
     self.pid = pid
+    self.arrival_time = arrival_time
     self.burst_time = burst_time
-    self.remaining_time = burst_time
+    self.remaining_time = remaining_time if remaining_time is not None else burst_time
     self.priority = priority
-    self.waiting_time = 0
-  
+    self.completion_time = completion_time
+    self.waiting_time = waiting_time
+    self.turnaround_time = turnaround_time
+
 
 def _update_waiting_time(current_process, ready_queue):
   for process in ready_queue:
@@ -43,11 +47,12 @@ def SJF(ready_queue):
       
       ready_queue.remove(shortest_job)
        
-# -------------Preepmtive Priority Scheduler -----------------
+# -------------Preemptive Priority Scheduler -----------------
+# NOTE: smaller priority number = higher priority (per PDF spec)
 def preemptive_Priority(ready_queue):
     
     while len(ready_queue) > 0:
-      Priority_job = max(ready_queue, key=lambda process: process.priority)
+      Priority_job = min(ready_queue, key=lambda process: process.priority)
       Priority_job.remaining_time -= 1
 
       _update_waiting_time(Priority_job, ready_queue)
@@ -57,11 +62,12 @@ def preemptive_Priority(ready_queue):
       if Priority_job.remaining_time == 0:
         ready_queue.remove(Priority_job)
 
-# -------------non-preemptive Priority Scheduler -----------------
+# -------------Non-Preemptive Priority Scheduler -----------------
+# NOTE: smaller priority number = higher priority (per PDF spec)
 def Non_preemptive_Priority(ready_queue):
     
     while len(ready_queue) > 0:
-      Priority_job = max(ready_queue, key=lambda process: process.priority)
+      Priority_job = min(ready_queue, key=lambda process: process.priority)
       
       while(Priority_job.remaining_time > 0):
         Priority_job.remaining_time -= 1
@@ -75,7 +81,7 @@ def Non_preemptive_Priority(ready_queue):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  FCFS  –  First Come First Served  (Non-Preemptive)
+#  FCFS  –  First Come First Served  
 # ─────────────────────────────────────────────────────────────────────────────
 #
 #  ready_queue : list of Process Objects
@@ -129,4 +135,3 @@ def round_robin(ready_queue, quantum):
             rr_queue.append(current)       # not done → back of queue
         else:
             ready_queue.remove(current)    # done → remove from ready_queue ←
-
