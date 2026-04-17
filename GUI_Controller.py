@@ -5,8 +5,8 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem
 
 from scheduler import (Process, FCFS, SJF, preemptive_SJF,
-                        preemptive_Priority, Non_preemptive_Priority,
-                        round_robin)
+                       preemptive_Priority, Non_preemptive_Priority,
+                       round_robin)
 from gantt_chart import GanttWidget
 
 
@@ -29,13 +29,13 @@ class SchedulerController:
 
     def __init__(self, window) -> None:
         self.window = window
-        self.all_processes    = []
-        self.ready_queue      = []
-        self.current_process  = None
-        self.current_time     = 0
-        self.gantt_data       = []
-        self._live_mode       = False
-        self._paused          = False
+        self.all_processes = []
+        self.ready_queue = []
+        self.current_process = None
+        self.current_time = 0
+        self.gantt_data = []
+        self._live_mode = False
+        self._paused = False
 
         # ── Gantt widget — create once and add to the gantt_frame layout ──
         self._gantt_widget = GanttWidget()
@@ -43,7 +43,7 @@ class SchedulerController:
 
         # ── Timer (1 tick = 1 second) ──
         self._timer = QTimer()
-        self._timer.setInterval(1000) 
+        self._timer.setInterval(1000)
         self._timer.timeout.connect(self._tick)
 
         # ── Connect buttons ──
@@ -52,6 +52,7 @@ class SchedulerController:
         window.start_live_btn.clicked.connect(self._on_start_live)
         window.run_existing_btn.clicked.connect(self._on_run_static)
         window.stop_btn.clicked.connect(self._on_stop)
+        window.reset_btn.clicked.connect(self._on_reset)
 
         # ── Reset everything when the algorithm changes ──
         window.algo_combo.currentIndexChanged.connect(self._on_algo_changed)
@@ -62,11 +63,11 @@ class SchedulerController:
         self._timer.stop()
 
         # Clear all data
-        self.all_processes   = []
-        self.ready_queue     = []
+        self.all_processes = []
+        self.ready_queue = []
         self.current_process = None
-        self.current_time    = 0
-        self.gantt_data      = []
+        self.current_time = 0
+        self.gantt_data = []
 
         # Reset Gantt chart
         self._gantt_widget.reset()
@@ -92,13 +93,53 @@ class SchedulerController:
             "background-color: #e67e22; color: white; font-weight: bold;")
         self.window.add_now_btn.setVisible(False)
 
+    def _on_reset(self) -> None:
+        """Reset the entire application to its initial state."""
+        # Stop any running simulation
+        self._timer.stop()
+
+        # Clear all data
+        self.all_processes = []
+        self.ready_queue = []
+        self.current_process = None
+        self.current_time = 0
+        self.gantt_data = []
+
+        # Reset Gantt chart
+        self._gantt_widget.reset()
+
+        # Clear tables
+        self.window.process_table.setRowCount(0)
+        self.window.live_table.setRowCount(0)
+
+        # Reset labels
+        self.window.avg_waiting_label.setText("Avg Waiting Time: --")
+        self.window.avg_turnaround_label.setText("Avg Turnaround Time: --")
+
+        # Re-enable buttons
+        self.window.add_btn.setEnabled(True)
+        self.window.start_live_btn.setEnabled(True)
+        self.window.run_existing_btn.setEnabled(True)
+        self.window.algo_combo.setEnabled(True)
+
+        # Reset pause state
+        self._paused = False
+        self.window.stop_btn.setText("Pause")
+        self.window.stop_btn.setStyleSheet(
+            "background-color: #e67e22; color: white; font-weight: bold;")
+        self.window.add_now_btn.setVisible(False)
+
+        # Clear input fields
+        self._clear_inputs()
+
     def _on_add_process(self) -> None:
         w = self.window
         algo = w.algo_combo.currentText()
 
         pid = w.p_name.text().strip()
         if not pid:
-            QMessageBox.warning(w, "Input Error", "Process Name cannot be empty.")
+            QMessageBox.warning(
+                w, "Input Error", "Process Name cannot be empty.")
             return
 
         if any(p.pid == pid for p in self.all_processes):
@@ -106,8 +147,8 @@ class SchedulerController:
                                 f"A process with name '{pid}' already exists.")
             return
 
-        arrival  = w.p_arrival.value()
-        burst    = w.p_burst.value()
+        arrival = w.p_arrival.value()
+        burst = w.p_burst.value()
 
         # Only read priority when a Priority algorithm is selected
         priority = 0
@@ -115,14 +156,14 @@ class SchedulerController:
             priority = w.p_priority.value()
 
         proc = Process(
-            pid             = pid,
-            arrival_time    = arrival,
-            burst_time      = burst,
-            priority        = priority,
-            remaining_time  = burst,
-            completion_time = 0,
-            waiting_time    = 0,
-            turnaround_time = 0,
+            pid=pid,
+            arrival_time=arrival,
+            burst_time=burst,
+            priority=priority,
+            remaining_time=burst,
+            completion_time=0,
+            waiting_time=0,
+            turnaround_time=0,
         )
         self.all_processes.append(proc)
 
@@ -142,7 +183,8 @@ class SchedulerController:
 
         pid = w.p_name.text().strip()
         if not pid:
-            QMessageBox.warning(w, "Input Error", "Process Name cannot be empty.")
+            QMessageBox.warning(
+                w, "Input Error", "Process Name cannot be empty.")
             return
 
         if any(p.pid == pid for p in self.all_processes):
@@ -157,14 +199,14 @@ class SchedulerController:
             priority = w.p_priority.value()
 
         proc = Process(
-            pid             = pid,
-            arrival_time    = self.current_time,
-            burst_time      = burst,
-            priority        = priority,
-            remaining_time  = burst,
-            completion_time = 0,
-            waiting_time    = 0,
-            turnaround_time = 0,
+            pid=pid,
+            arrival_time=self.current_time,
+            burst_time=burst,
+            priority=priority,
+            remaining_time=burst,
+            completion_time=0,
+            waiting_time=0,
+            turnaround_time=0,
         )
         self.all_processes.append(proc)
 
@@ -226,10 +268,10 @@ class SchedulerController:
 
         # Reset processes
         for p in self.all_processes:
-            p.remaining_time    = p.burst_time
-            p.completion_time   = 0
-            p.waiting_time      = 0
-            p.turnaround_time   = 0
+            p.remaining_time = p.burst_time
+            p.completion_time = 0
+            p.waiting_time = 0
+            p.turnaround_time = 0
 
         # Enqueue processes that arrive at time 0
         for p in self.all_processes:
@@ -289,10 +331,10 @@ class SchedulerController:
 
         # Reset processes
         for p in self.all_processes:
-            p.remaining_time    = p.burst_time
-            p.completion_time   = 0
-            p.waiting_time      = 0
-            p.turnaround_time   = 0
+            p.remaining_time = p.burst_time
+            p.completion_time = 0
+            p.waiting_time = 0
+            p.turnaround_time = 0
 
         # Enqueue processes that arrive at time 0
         for p in self.all_processes:
@@ -311,7 +353,8 @@ class SchedulerController:
         self.window.run_existing_btn.setEnabled(False)
 
         # Safety limit to prevent infinite loops
-        max_time = sum(p.burst_time for p in self.all_processes) + max(p.arrival_time for p in self.all_processes) + 10
+        max_time = sum(p.burst_time for p in self.all_processes) + \
+            max(p.arrival_time for p in self.all_processes) + 10
 
         # Run the entire simulation instantly
         while self.current_time < max_time:
@@ -331,10 +374,11 @@ class SchedulerController:
                 # Update Gantt data
                 if (self.gantt_data and
                     self.gantt_data[-1][0] == proc.pid and
-                    self.gantt_data[-1][2] == start_time):
+                        self.gantt_data[-1][2] == start_time):
                     self.gantt_data[-1][2] = self.current_time
                 else:
-                    self.gantt_data.append([proc.pid, start_time, self.current_time])
+                    self.gantt_data.append(
+                        [proc.pid, start_time, self.current_time])
 
                 # Mark completion
                 if proc.remaining_time == 0:
@@ -343,7 +387,8 @@ class SchedulerController:
 
             except StopIteration:
                 # Check if there are still unfinished processes
-                unfinished = [p for p in self.all_processes if p.completion_time == 0]
+                unfinished = [
+                    p for p in self.all_processes if p.completion_time == 0]
                 if unfinished:
                     # CPU is idle — re-create generator for when new processes arrive
                     self.current_process = None
@@ -378,12 +423,13 @@ class SchedulerController:
             start_time = self.current_time - 1
 
             # Update Gantt data
-            if (self.gantt_data and 
-                self.gantt_data[-1][0] == proc.pid and 
-                self.gantt_data[-1][2] == start_time):
+            if (self.gantt_data and
+                self.gantt_data[-1][0] == proc.pid and
+                    self.gantt_data[-1][2] == start_time):
                 self.gantt_data[-1][2] = self.current_time
             else:
-                self.gantt_data.append([proc.pid, start_time, self.current_time])
+                self.gantt_data.append(
+                    [proc.pid, start_time, self.current_time])
 
             # Mark completion
             if proc.remaining_time == 0:
@@ -392,7 +438,8 @@ class SchedulerController:
 
         except StopIteration:
             # Check if there are still unfinished processes
-            unfinished = [p for p in self.all_processes if p.completion_time == 0]
+            unfinished = [
+                p for p in self.all_processes if p.completion_time == 0]
             if unfinished:
                 # CPU is idle — re-create generator for when new processes arrive
                 self.current_process = None
@@ -483,11 +530,13 @@ class SchedulerController:
         if not completed:
             return
 
-        avg_wt  = sum(p.waiting_time     for p in completed) / len(completed)
-        avg_tat = sum(p.turnaround_time  for p in completed) / len(completed)
+        avg_wt = sum(p.waiting_time for p in completed) / len(completed)
+        avg_tat = sum(p.turnaround_time for p in completed) / len(completed)
 
-        self.window.avg_waiting_label.setText(f"Avg Waiting Time: {avg_wt:.2f}")
-        self.window.avg_turnaround_label.setText(f"Avg Turnaround Time: {avg_tat:.2f}")
+        self.window.avg_waiting_label.setText(
+            f"Avg Waiting Time: {avg_wt:.2f}")
+        self.window.avg_turnaround_label.setText(
+            f"Avg Turnaround Time: {avg_tat:.2f}")
 
     def _show_final_results(self) -> None:
         """Pop up a summary dialog when all processes have finished."""
@@ -495,8 +544,8 @@ class SchedulerController:
         if not completed:
             return
 
-        avg_wt  = sum(p.waiting_time     for p in completed) / len(completed)
-        avg_tat = sum(p.turnaround_time  for p in completed) / len(completed)
+        avg_wt = sum(p.waiting_time for p in completed) / len(completed)
+        avg_tat = sum(p.turnaround_time for p in completed) / len(completed)
 
         lines = [
             "=== Simulation Complete ===",
@@ -509,7 +558,8 @@ class SchedulerController:
             "-" * 24,
         ]
         for p in completed:
-            lines.append(f"{p.pid:<8} {p.turnaround_time:>6} {p.waiting_time:>6}")
+            lines.append(
+                f"{p.pid:<8} {p.turnaround_time:>6} {p.waiting_time:>6}")
 
         QMessageBox.information(self.window, "Results", "\n".join(lines))
 

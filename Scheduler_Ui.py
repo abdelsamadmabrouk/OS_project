@@ -139,9 +139,15 @@ class CPUSchedulerUI(QMainWindow):
         self.stop_btn.setStyleSheet(
             "background-color: #e67e22; color: white; font-weight: bold;")
 
+        self.reset_btn = QPushButton("Reset")
+        self.reset_btn.setFixedHeight(40)
+        self.reset_btn.setStyleSheet(
+            "background-color: #95a5a6; color: white; font-weight: bold;")
+
         btn_layout.addWidget(self.start_live_btn)
         btn_layout.addWidget(self.run_existing_btn)
         btn_layout.addWidget(self.stop_btn)
+        btn_layout.addWidget(self.reset_btn)
         self.main_layout.addLayout(btn_layout)
 
         results_frame = QFrame()
