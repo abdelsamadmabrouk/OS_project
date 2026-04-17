@@ -49,7 +49,7 @@ class CPUSchedulerUI(QMainWindow):
         self.p_burst = QSpinBox()
         self.p_burst.setMinimum(1)
         self.p_burst.setMaximum(9999)
-        layout.addRow("Process Name:", self.p_name)
+        layout.addRow("Process ID:", self.p_name)
         layout.addRow("Arrival Time:", self.p_arrival)
         layout.addRow("Burst Time:",   self.p_burst)
 
@@ -96,7 +96,7 @@ class CPUSchedulerUI(QMainWindow):
         # Main process table — 6 columns including Remaining and Status
         self.process_table = QTableWidget(0, 6)
         self.process_table.setHorizontalHeaderLabels(
-            ["Name", "Arrival", "Burst", "Priority", "Remaining", "Status"])
+            ["PID", "Arrival", "Burst", "Priority", "Remaining", "Status"])
         self.process_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.Stretch)
 
@@ -139,7 +139,7 @@ class CPUSchedulerUI(QMainWindow):
         self.stop_btn.setStyleSheet(
             "background-color: #e67e22; color: white; font-weight: bold;")
 
-        self.reset_btn = QPushButton("Reset")
+        self.reset_btn = QPushButton("Clear")
         self.reset_btn.setFixedHeight(40)
         self.reset_btn.setStyleSheet(
             "background-color: #95a5a6; color: white; font-weight: bold;")
